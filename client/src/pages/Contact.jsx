@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import GoogleMapEmbed from '../components/GoogleMapEmbed';
-import { useToast } from './ToastContext';
 
 /* --- Constants --- */
 const companyName = "IFYWIGATECHZ Global Services";
@@ -31,7 +30,6 @@ const faqs = [
 
 export default function Contact() {
   const location = useLocation();
-  const { addToast } = useToast();
   // State management can be simplified for async form submission
   const [openFaq, setOpenFaq] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
@@ -75,14 +73,12 @@ export default function Contact() {
     onSuccess: () => {
       // You can use your global toast here if you have one, e.g., addToast(...)
       alert("Message sent successfully! We'll be in touch shortly.");
-      addToast("Message sent successfully! We'll be in touch shortly.", 'success');
       setForm({ ...form, name: '', email: '', phone: '', subject: '', message: '' });
       recaptchaRef.current.reset();
       setCaptchaToken(null);
     },
     onError: (error) => {
       alert(error.message);
-      addToast(error.message, 'error');
       recaptchaRef.current.reset();
       setCaptchaToken(null);
     }
@@ -92,12 +88,10 @@ export default function Contact() {
     e.preventDefault();
     if (!import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || import.meta.env.VITE_WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY_HERE') {
       alert('Web3Forms access key is not configured. Please set it up in your environment variables.');
-      addToast('Contact form is not configured correctly.', 'error');
       return;
     }
     if (!captchaToken) {
       alert("Please complete the reCAPTCHA challenge.");
-      addToast("Please complete the reCAPTCHA challenge.", 'error');
       return;
     }
     contactMutation.mutate(form);
