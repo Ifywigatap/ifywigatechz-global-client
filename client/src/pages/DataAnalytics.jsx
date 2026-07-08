@@ -31,14 +31,31 @@ const dataAnalyticsTheme = {
 export default function DataAnalytics() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, dataAnalyticsCoursePaid, unlockDataAnalyticsCourse } = useAuth();
+  // Refactor: Use a generic function from AuthContext to refresh user state after any purchase.
+  const { user, dataAnalyticsCoursePaid, verifyAndRefreshUser } = useAuth();
   const modules = getModules(user);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false); // State for post-payment verification
+  const [error, setError] = useState('');
 
   const price = COURSE?.price ? COURSE.price.toLocaleString() : '0';
 
   const toggleFaq = (index) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
+  const handlePaymentSuccess = async (response) => {
+    setIsVerifying(true);
+    setError('');
+    try {
+      // This generic function in AuthContext should verify payment and refetch user data.
+      await verifyAndRefreshUser(response.reference);
+      // The component will re-render with `dataAnalyticsCoursePaid` as true.
+    } catch (err) {
+      setError("Payment successful, but verification failed. Please refresh the page or contact support.");
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -89,15 +106,17 @@ export default function DataAnalytics() {
               >
                 Continue Learning
               </button>
+            ) : isVerifying ? (
+              <button className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-amber-400 text-black font-bold rounded-xl shadow-lg transition" disabled>
+                Verifying Payment...
+              </button>
             ) : (
               <PaystackButton
                 email={user.email}
                 amount={COURSE.price}
                 reference={`data_analytics_course_${Date.now()}`}
                 metadata={{ course: 'data-analytics', userId: user.id }}
-                onSuccess={(response) => {
-                  unlockDataAnalyticsCourse(response.reference);
-                }}
+                onSuccess={handlePaymentSuccess}
                 className="px-8 py-4 bg-gradient-to-r from-brandBlue to-blue-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition"
                 label={`Unlock Course - ₦${price}`}
               />
@@ -110,6 +129,7 @@ export default function DataAnalytics() {
               View Curriculum
             </a>
           </div>
+          {error && <p className="text-center text-red-400 mt-4 text-sm">{error}</p>}
         </motion.div>
       </header>
 
@@ -196,15 +216,17 @@ export default function DataAnalytics() {
                 Continue Learning
                 <ArrowRight size={18} />
               </button>
+            ) : isVerifying ? (
+               <button className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-yellow-500 to-amber-400 text-black font-bold rounded-xl shadow-lg transition" disabled>
+                Verifying Payment...
+              </button>
             ) : (
               <PaystackButton
                 email={user.email}
                 amount={COURSE.price}
                 reference={`data_analytics_course_${Date.now()}`}
                 metadata={{ course: 'data-analytics', userId: user.id }}
-                onSuccess={(response) => {
-                  unlockDataAnalyticsCourse(response.reference);
-                }}
+                onSuccess={handlePaymentSuccess}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brandBlue to-blue-600 text-white font-bold rounded-xl hover:scale-105 transition"
                 label={`Unlock Course - ₦${price}`}
               />

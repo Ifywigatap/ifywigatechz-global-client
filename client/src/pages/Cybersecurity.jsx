@@ -32,12 +32,30 @@ const cybersecurityTheme = {
 export default function Cybersecurity() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, cybersecurityCoursePaid, unlockCybersecurityCourse } = useAuth();
+  // Refactor: Use a generic function from AuthContext to refresh user state after any purchase.
+  const { user, cybersecurityCoursePaid, verifyAndRefreshUser } = useAuth();
   const modules = getModules(user);
 
   const price = COURSE?.price ? COURSE.price.toLocaleString() : '0';
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false); // State for post-payment verification
+  const [error, setError] = useState('');
+
   const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
+
+  const handlePaymentSuccess = async (response) => {
+    setIsVerifying(true);
+    setError('');
+    try {
+      // This generic function in AuthContext should verify payment and refetch user data.
+      await verifyAndRefreshUser(response.reference);
+      // The component will re-render with `cybersecurityCoursePaid` as true.
+    } catch (err) {
+      setError("Payment successful, but verification failed. Please refresh the page or contact support.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   return (
     <>
@@ -75,15 +93,17 @@ export default function Cybersecurity() {
                 >
                   Continue Learning
                 </button>
+              ) : isVerifying ? (
+                <button className="w-full rounded-2xl bg-gradient-to-r from-yellow-500 to-amber-400 px-6 py-4 text-base font-bold text-black shadow-lg transition-all duration-300" disabled>
+                  Verifying Payment...
+                </button>
               ) : (
                 <PaystackButton
                   email={user.email}
                   amount={COURSE.price}
                   reference={`cyber_course_${Date.now()}`}
                   metadata={{ course: 'cybersecurity', userId: user.id }}
-                  onSuccess={(response) => {
-                    unlockCybersecurityCourse(response.reference);
-                  }}
+                  onSuccess={handlePaymentSuccess}
                   className="w-full rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-6 py-4 text-base font-bold text-white shadow-xl shadow-red-500/25 transition-all duration-300 hover:from-red-500 hover:to-orange-400 hover:scale-[1.02]"
                   label={`Unlock Course - N${price}`}
                 />
@@ -92,6 +112,7 @@ export default function Cybersecurity() {
                 Browse all courses
               </Link>
             </div>
+            {error && <p className="text-center text-red-400 mt-4 text-sm">{error}</p>}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="stat-card">
                 <div className="text-3xl font-bold text-red-300">N{price}</div>

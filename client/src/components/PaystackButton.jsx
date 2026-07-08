@@ -6,6 +6,8 @@ export default function PaystackButton({
   reference = '', 
   metadata = {}, 
   onSuccess,
+  onClose, // Add onClose callback prop
+  onError, // Add onError callback prop
   className = '',
   label = 'Pay with Paystack'
 }) {
@@ -36,23 +38,27 @@ export default function PaystackButton({
     e.preventDefault();
 
     if (!scriptLoaded) {
-      alert("Paystack is loading. Please try again in a moment.");
+      const errorMsg = "Paystack is loading. Please try again in a moment.";
+      if (onError) onError(errorMsg); else alert(errorMsg);
       return;
     }
 
     if (!window.PaystackPop) {
-      alert("Paystack script not loaded correctly. Please refresh the page.");
+      const errorMsg = "Paystack script not loaded correctly. Please refresh the page.";
       console.error('PaystackPop not found on window');
+      if (onError) onError(errorMsg); else alert(errorMsg);
       return;
     }
 
     if (!email) {
-      alert("Please provide a valid email address.");
+      const errorMsg = "Please provide a valid email address.";
+      if (onError) onError(errorMsg); else alert(errorMsg);
       return;
     }
 
     if (!amount || amount <= 0) {
-      alert("Invalid amount. Please select a valid course.");
+      const errorMsg = "Invalid amount. Please select a valid item.";
+      if (onError) onError(errorMsg); else alert(errorMsg);
       return;
     }
 
@@ -63,7 +69,8 @@ export default function PaystackButton({
 
       if (!paystackKey) {
         console.error("Missing VITE_PAYSTACK_PUBLIC_KEY environment variable.");
-        alert("Payment gateway is not configured properly. Please contact support.");
+        const errorMsg = "Payment gateway is not configured properly. Please contact support.";
+        if (onError) onError(errorMsg); else alert(errorMsg);
         setIsLoading(false);
         return;
       }
@@ -76,12 +83,13 @@ export default function PaystackButton({
         ref: reference,
         metadata: metadata,
         onClose: function () {
-          console.log('Payment window closed');
+          console.log('Payment window closed by user.');
+          if (onClose) onClose(); // Use the callback
           setIsLoading(false);
         },
         callback: function (response) {
           console.log('Payment successful:', response);
-          alert("✅ Payment successful! Ref: " + response.reference);
+          // alert("✅ Payment successful! Ref: " + response.reference); // Let parent handle success message
 
           if (onSuccess) {
             try {
@@ -98,7 +106,8 @@ export default function PaystackButton({
       handler.openIframe();
     } catch (error) {
       console.error('Payment error:', error);
-      alert("Error processing payment. Please try again.");
+      const errorMsg = "Error processing payment. Please try again.";
+      if (onError) onError(errorMsg); else alert(errorMsg);
       setIsLoading(false);
     }
   };

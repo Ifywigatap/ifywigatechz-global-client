@@ -1,232 +1,126 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../services/admin';
 import { blogService } from '../services/blog';
-import Toast from '../components/Toast';
+import { useToast } from './ToastContext';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [loading, setLoading] = useState({
-    dashboard: true,
-    users: false,
-    orders: false,
-    products: false,
-    blog: false
-  });
-  const [toast, setToast] = useState(null);
-  
-  // Dashboard Data
-  const [dashboardStats, setDashboardStats] = useState(null);
-  const [analyticsData, setAnalyticsData] = useState(null);
-  
-  // Users Data
-  const [users, setUsers] = useState([]);
-  const [usersPage, setUsersPage] = useState(1);
-  const [usersTotal, setUsersTotal] = useState(0);
-  
-  // Orders Data
-  const [orders, setOrders] = useState([]);
-  const [ordersPage, setOrdersPage] = useState(1);
-  const [ordersTotal, setOrdersTotal] = useState(0);
-  
-  // Products Data
-  const [products, setProducts] = useState([]);
-  const [productsPage, setProductsPage] = useState(1);
-  const [productsTotal, setProductsTotal] = useState(0);
+  const { addToast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Blog Posts Data
-  const [blogPosts, setBlogPosts] = useState([]);
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Pagination State
+  const [usersPage, setUsersPage] = useState(1);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [productsPage, setProductsPage] = useState(1);
   const [blogPostsPage, setBlogPostsPage] = useState(1);
-  const [blogPostsTotal, setBlogPostsTotal] = useState(0);
 
   useEffect(() => {
-    // Check if user is admin
     const userRole = localStorage.getItem('userRole');
     if (userRole !== 'admin') {
       navigate('/');
-      return;
     }
-
-    fetchDashboardData();
   }, [navigate]);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(prev => ({ ...prev, dashboard: true }));
-      // Prod: Fetching dashboard stats
+  // --- Data Fetching with TanStack Query ---
 
-      const statsResponse = await adminService.getDashboardStats();
-      if (statsResponse.ok) {
-        setDashboardStats(statsResponse.data);
-      }
+  const { data: dashboardStats, isLoading: isDashboardLoading } = useQuery({
+    queryKey: ['adminDashboardStats'],
+    queryFn: async () => (await adminService.getDashboardStats()).data,
+    onError: () => addToast('Failed to load dashboard stats', 'error'),
+  });
 
-      const analyticsResponse = await adminService.getAnalytics('revenue', 'monthly');
-      if (analyticsResponse.ok) {
-        setAnalyticsData(analyticsResponse.data);
-      }
+  const { data: usersData, isLoading: isUsersLoading } = useQuery({
+    queryKey: ['adminUsers', usersPage],
+    queryFn: async () => (await adminService.getAllUsers(usersPage, 10)).data,
+    enabled: activeTab === 'users',
+    keepPreviousData: true,
+    onError: () => addToast('Failed to load users', 'error'),
+  });
+  const users = usersData?.users || [];
+  const usersTotal = usersData?.total || 0;
 
-      setLoading(prev => ({ ...prev, dashboard: false }));
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast('Failed to load dashboard', 'error');
-      setLoading(prev => ({ ...prev, dashboard: false }));
-    }
+  const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
+    queryKey: ['adminOrders', ordersPage],
+    queryFn: async () => (await adminService.getAllOrders(ordersPage, 10)).data,
+    enabled: activeTab === 'orders',
+    keepPreviousData: true,
+    onError: () => addToast('Failed to load orders', 'error'),
+  });
+  const orders = ordersData?.orders || [];
+  const ordersTotal = ordersData?.total || 0;
+
+  const { data: productsData, isLoading: isProductsLoading } = useQuery({
+    queryKey: ['adminProducts', productsPage],
+    queryFn: async () => (await adminService.getAllProducts(productsPage, 10)).data,
+    enabled: activeTab === 'products',
+    keepPreviousData: true,
+    onError: () => addToast('Failed to load products', 'error'),
+  });
+  const products = productsData?.products || [];
+  const productsTotal = productsData?.total || 0;
+
+  const { data: blogPostsData, isLoading: isBlogLoading } = useQuery({
+    queryKey: ['adminBlogPosts', blogPostsPage],
+    queryFn: async () => (await blogService.getAllPosts(blogPostsPage, 10)),
+    enabled: activeTab === 'blog',
+    keepPreviousData: true,
+    onError: () => addToast('Failed to load blog posts', 'error'),
+  });
+  const blogPosts = blogPostsData?.data || [];
+  const blogPostsTotal = blogPostsData?.pagination?.total || 0;
+
+  // --- Mutations with TanStack Query ---
+
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: ({ orderId, newStatus }) => adminService.updateOrderStatus(orderId, newStatus),
+    onSuccess: () => {
+      addToast('Order updated successfully', 'success');
+      queryClient.invalidateQueries(['adminOrders', ordersPage]);
+    },
+    onError: (error) => addToast(error.message || 'Failed to update order', 'error'),
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (productId) => adminService.deleteProduct(productId),
+    onSuccess: () => {
+      addToast('Product deleted successfully', 'success');
+      queryClient.invalidateQueries(['adminProducts']);
+    },
+    onError: (error) => addToast(error.message || 'Failed to delete product', 'error'),
+  });
+
+  const deleteBlogPostMutation = useMutation({
+    mutationFn: (postId) => blogService.deletePost(postId),
+    onSuccess: () => {
+      addToast('Blog post deleted successfully', 'success');
+      queryClient.invalidateQueries(['adminBlogPosts']);
+    },
+    onError: (error) => addToast(error.message || 'Failed to delete blog post', 'error'),
+  });
+
+  // --- Event Handlers ---
+
+  const handleUpdateOrderStatus = (orderId, newStatus) => {
+    updateOrderStatusMutation.mutate({ orderId, newStatus });
   };
 
-  const fetchUsers = async (page = 1) => {
-    try {
-      setLoading(prev => ({ ...prev, users: true }));
-      console.log('[AdminDashboard] Fetching users, page:', page);
-      const response = await adminService.getAllUsers(page, 10);
-
-      if (response.ok) {
-        setUsers(response.data.users || []);
-        setUsersTotal(response.data.total || 0);
-        setUsersPage(page);
-      }
-      setLoading(prev => ({ ...prev, users: false }));
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast('Failed to load users', 'error');
-      setLoading(prev => ({ ...prev, users: false }));
-    }
-  };
-
-  const fetchOrders = async (page = 1) => {
-    try {
-      setLoading(prev => ({ ...prev, orders: true }));
-      console.log('[AdminDashboard] Fetching orders, page:', page);
-      const response = await adminService.getAllOrders(page, 10);
-
-      if (response.ok) {
-        setOrders(response.data.orders || []);
-        setOrdersTotal(response.data.total || 0);
-        setOrdersPage(page);
-      }
-      setLoading(prev => ({ ...prev, orders: false }));
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast('Failed to load orders', 'error');
-      setLoading(prev => ({ ...prev, orders: false }));
-    }
-  };
-
-  const fetchProducts = async (page = 1) => {
-    try {
-      setLoading(prev => ({ ...prev, products: true }));
-      console.log('[AdminDashboard] Fetching products, page:', page);
-      const response = await adminService.getAllProducts(page, 10);
-
-      if (response.ok) {
-        setProducts(response.data.products || []);
-        setProductsTotal(response.data.total || 0);
-        setProductsPage(page);
-      }
-      setLoading(prev => ({ ...prev, products: false }));
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast('Failed to load products', 'error');
-      setLoading(prev => ({ ...prev, products: false }));
-    }
-  };
-
-  const fetchBlogPosts = async (page = 1) => {
-    try {
-      setLoading(prev => ({ ...prev, blog: true }));
-      console.log('[AdminDashboard] Fetching blog posts, page:', page);
-      const response = await blogService.getAllPosts(page, 10);
-
-      if (response.ok) {
-        setBlogPosts(response.data || []);
-        setBlogPostsTotal(response.pagination?.total || 0);
-        setBlogPostsPage(page);
-      }
-      setLoading(prev => ({ ...prev, blog: false }));
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast('Failed to load blog posts', 'error');
-      setLoading(prev => ({ ...prev, blog: false }));
-    }
-  };
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-
-    if (tab === 'users' && users.length === 0) {
-      fetchUsers();
-    } else if (tab === 'orders' && orders.length === 0) {
-      fetchOrders();
-    } else if (tab === 'products' && products.length === 0) {
-      fetchProducts();
-    } else if (tab === 'blog' && blogPosts.length === 0) {
-      fetchBlogPosts();
-    }
-  };
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
-
-  const handleUpdateOrderStatus = async (orderId, newStatus) => {
-    try {
-      console.log('[AdminDashboard] Updating order status:', orderId, newStatus);
-      const response = await adminService.updateOrderStatus(orderId, newStatus);
-
-      if (response.ok) {
-        showToast('Order updated successfully', 'success');
-        fetchOrders(ordersPage);
-      } else {
-        showToast('Failed to update order', 'error');
-      }
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast(error.message || 'Failed to update order', 'error');
-    }
-  };
-
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
-
-    try {
-      console.log('[AdminDashboard] Deleting product:', productId);
-      const response = await adminService.deleteProduct(productId);
-
-      if (response.ok) {
-        showToast('Product deleted successfully', 'success');
-        fetchProducts(productsPage);
-      } else {
-        showToast('Failed to delete product', 'error');
-      }
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast(error.message || 'Failed to delete product', 'error');
-    }
+    deleteProductMutation.mutate(productId);
   };
 
-  const handleDeleteBlogPost = async (postId) => {
+  const handleDeleteBlogPost = (postId) => {
     if (!window.confirm('Are you sure you want to delete this blog post?')) return;
-
-    try {
-      console.log('[AdminDashboard] Deleting blog post:', postId);
-      const response = await blogService.deletePost(postId);
-
-      if (response.ok) {
-        showToast('Blog post deleted successfully', 'success');
-        fetchBlogPosts(blogPostsPage);
-      } else {
-        showToast('Failed to delete blog post', 'error');
-      }
-    } catch (error) {
-      console.error('[AdminDashboard] Error:', error);
-      showToast(error.message || 'Failed to delete blog post', 'error');
-    }
+    deleteBlogPostMutation.mutate(postId);
   };
 
   const getPaginationDisabled = (page, total, limit = 10) => page * limit >= total;
 
-  if (loading.dashboard && activeTab === 'dashboard') {
+  if (isDashboardLoading && activeTab === 'dashboard') {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4">
@@ -264,13 +158,13 @@ export default function AdminDashboard() {
               {['dashboard', 'users', 'orders', 'products', 'blog'].map(tab => (
                 <button
                   key={tab}
-                  onClick={() => handleTabChange(tab)}
-                  disabled={loading[tab]}
+                  onClick={() => setActiveTab(tab)}
+                  disabled={isDashboardLoading || isUsersLoading || isOrdersLoading || isProductsLoading || isBlogLoading}
                   className={`flex-1 py-4 px-2 font-semibold capitalize transition-all whitespace-nowrap text-sm md:text-base ${
                     activeTab === tab
                       ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                  } ${loading[tab] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${ (isDashboardLoading || isUsersLoading || isOrdersLoading || isProductsLoading || isBlogLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {tab.replace(/\\b(\\w)/g, m => m.toUpperCase())}
                 </button>
@@ -281,7 +175,7 @@ export default function AdminDashboard() {
               {/* Dashboard Tab */}
               {activeTab === 'dashboard' && (
                 <>
-                  {loading.dashboard ? (
+                  {isDashboardLoading ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                       <p className="text-slate-600 dark:text-slate-400">Loading dashboard...</p>
@@ -378,7 +272,7 @@ export default function AdminDashboard() {
               {/* Users Tab */}
               {activeTab === 'users' && (
                 <>
-                  {loading.users ? (
+                  {isUsersLoading ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                       <p className="text-slate-600 dark:text-slate-400">Loading users...</p>
@@ -447,7 +341,7 @@ export default function AdminDashboard() {
                       {usersTotal > 10 && (
                         <div className="mt-8 flex justify-center gap-2">
                           <button
-                            onClick={() => fetchUsers(Math.max(1, usersPage - 1))}
+                            onClick={() => setUsersPage(p => Math.max(1, p - 1))}
                             disabled={usersPage === 1}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -457,7 +351,7 @@ export default function AdminDashboard() {
                             Page {usersPage} of {Math.ceil(usersTotal / 10)}
                           </span>
                           <button
-                            onClick={() => fetchUsers(usersPage + 1)}
+                            onClick={() => setUsersPage(p => p + 1)}
                             disabled={getPaginationDisabled(usersPage, usersTotal)}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -473,7 +367,7 @@ export default function AdminDashboard() {
               {/* Similar improvements for other tabs - Orders, Products, Blog */}
               {activeTab === 'orders' && (
                 <>
-                  {loading.orders ? (
+                  {isOrdersLoading ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                       <p className="text-slate-600 dark:text-slate-400">Loading orders...</p>
@@ -539,7 +433,7 @@ export default function AdminDashboard() {
                       {ordersTotal > 10 && (
                         <div className="mt-8 flex justify-center gap-2">
                           <button
-                            onClick={() => fetchOrders(Math.max(1, ordersPage - 1))}
+                            onClick={() => setOrdersPage(p => Math.max(1, p - 1))}
                             disabled={ordersPage === 1}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -549,7 +443,7 @@ export default function AdminDashboard() {
                             Page {ordersPage} of {Math.ceil(ordersTotal / 10)}
                           </span>
                           <button
-                            onClick={() => fetchOrders(ordersPage + 1)}
+                            onClick={() => setOrdersPage(p => p + 1)}
                             disabled={getPaginationDisabled(ordersPage, ordersTotal)}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -565,7 +459,7 @@ export default function AdminDashboard() {
               {/* Products Tab */}
               {activeTab === 'products' && (
                 <>
-                  {loading.products ? (
+                  {isProductsLoading ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                       <p className="text-slate-600 dark:text-slate-400">Loading products...</p>
@@ -637,7 +531,7 @@ export default function AdminDashboard() {
                       {productsTotal > 10 && (
                         <div className="mt-8 flex justify-center gap-2">
                           <button
-                            onClick={() => fetchProducts(Math.max(1, productsPage - 1))}
+                            onClick={() => setProductsPage(p => Math.max(1, p - 1))}
                             disabled={productsPage === 1}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -647,7 +541,7 @@ export default function AdminDashboard() {
                             Page {productsPage} of {Math.ceil(productsTotal / 10)}
                           </span>
                           <button
-                            onClick={() => fetchProducts(productsPage + 1)}
+                            onClick={() => setProductsPage(p => p + 1)}
                             disabled={getPaginationDisabled(productsPage, productsTotal)}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -663,7 +557,7 @@ export default function AdminDashboard() {
               {/* Blog Posts Tab */}
               {activeTab === 'blog' && (
                 <>
-                  {loading.blog ? (
+                  {isBlogLoading ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                       <p className="text-slate-600 dark:text-slate-400">Loading blog posts...</p>
@@ -750,7 +644,7 @@ export default function AdminDashboard() {
                       {blogPostsTotal > 10 && (
                         <div className="mt-8 flex justify-center gap-2">
                           <button
-                            onClick={() => fetchBlogPosts(Math.max(1, blogPostsPage - 1))}
+                            onClick={() => setBlogPostsPage(p => Math.max(1, p - 1))}
                             disabled={blogPostsPage === 1}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -760,7 +654,7 @@ export default function AdminDashboard() {
                             Page {blogPostsPage} of {Math.ceil(blogPostsTotal / 10)}
                           </span>
                           <button
-                            onClick={() => fetchBlogPosts(blogPostsPage + 1)}
+                            onClick={() => setBlogPostsPage(p => p + 1)}
                             disabled={getPaginationDisabled(blogPostsPage, blogPostsTotal)}
                             className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors duration-300 font-medium"
                           >
@@ -777,12 +671,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Toast positioned absolutely */}
-      {toast && (
-        <div className="fixed top-4 right-4 z-50">
-          <Toast message={toast.message} type={toast.type} />
-        </div>
-      )}
     </>
   );
 }

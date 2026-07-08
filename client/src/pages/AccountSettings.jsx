@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { userService } from '../services/user';
-import Toast from '../components/Toast';
+import { useToast } from './ToastContext';
 import AvatarUpload from '../components/AvatarUpload';
 
 export default function AccountSettings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState(null);
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [formData, setFormData] = useState({
@@ -77,14 +77,9 @@ export default function AccountSettings() {
       setLoading(false);
     } catch (error) {
       console.error('[AccountSettings] Error:', error);
-      showToast('Failed to load profile', 'error');
+      addToast('Failed to load profile', 'error');
       setLoading(false);
     }
-  };
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const handleProfileChange = (e) => {
@@ -119,13 +114,13 @@ export default function AccountSettings() {
       const response = await userService.updateProfile(formData);
 
       if (response.ok) {
-        showToast('Profile updated successfully', 'success');
+        addToast('Profile updated successfully', 'success');
       } else {
-        showToast(response.message || 'Failed to update profile', 'error');
+        addToast(response.message || 'Failed to update profile', 'error');
       }
     } catch (error) {
       console.error('[AccountSettings] Error:', error);
-      showToast(error.message || 'Failed to update profile', 'error');
+      addToast(error.message || 'Failed to update profile', 'error');
     }
   };
 
@@ -137,13 +132,13 @@ export default function AccountSettings() {
       const response = await userService.updateBillingAddress(addressData);
 
       if (response.ok) {
-        showToast('Address updated successfully', 'success');
+        addToast('Address updated successfully', 'success');
       } else {
-        showToast(response.message || 'Failed to update address', 'error');
+        addToast(response.message || 'Failed to update address', 'error');
       }
     } catch (error) {
       console.error('[AccountSettings] Error:', error);
-      showToast(error.message || 'Failed to update address', 'error');
+      addToast(error.message || 'Failed to update address', 'error');
     }
   };
 
@@ -151,12 +146,12 @@ export default function AccountSettings() {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast('Passwords do not match', 'error');
+      addToast('Passwords do not match', 'error');
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      showToast('Password must be at least 8 characters', 'error');
+      addToast('Password must be at least 8 characters', 'error');
       return;
     }
 
@@ -168,18 +163,18 @@ export default function AccountSettings() {
       );
 
       if (response.ok) {
-        showToast('Password changed successfully', 'success');
+        addToast('Password changed successfully', 'success');
         setPasswordData({
           oldPassword: '',
           newPassword: '',
           confirmPassword: ''
         });
       } else {
-        showToast(response.message || 'Failed to change password', 'error');
+        addToast(response.message || 'Failed to change password', 'error');
       }
     } catch (error) {
       console.error('[AccountSettings] Error:', error);
-      showToast(error.message || 'Failed to change password', 'error');
+      addToast(error.message || 'Failed to change password', 'error');
     }
   };
 
@@ -191,13 +186,13 @@ export default function AccountSettings() {
       const response = await userService.updatePreferences(preferences);
 
       if (response.ok) {
-        showToast('Preferences updated successfully', 'success');
+        addToast('Preferences updated successfully', 'success');
       } else {
-        showToast(response.message || 'Failed to update preferences', 'error');
+        addToast(response.message || 'Failed to update preferences', 'error');
       }
     } catch (error) {
       console.error('[AccountSettings] Error:', error);
-      showToast(error.message || 'Failed to update preferences', 'error');
+      addToast(error.message || 'Failed to update preferences', 'error');
     }
   };
 
@@ -249,7 +244,7 @@ if (loading) {
                     currentAvatar={avatarUrl} 
                     onUploadSuccess={(newAvatarUrl) => {
                       setAvatarUrl(newAvatarUrl);
-                      showToast('Avatar updated successfully!', 'success');
+                      addToast('Avatar updated successfully!', 'success');
                     }} 
                   />
                 </div>
@@ -522,8 +517,6 @@ if (loading) {
           </div>
         </div>
       </div>
-
-      {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   );
 }

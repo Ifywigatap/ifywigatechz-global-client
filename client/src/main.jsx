@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import './index.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
 
 // Initialize Sentry for error tracking
@@ -120,6 +121,7 @@ import ErrorPage from './pages/ErrorPage.jsx'
 // Context
 import RootLayout from './components/RootLayout.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import { ToastProvider } from './pages/ToastContext.jsx'
 import { useEffect } from 'react';
 
 // Plausible Analytics Integration (Moved from index.html)
@@ -297,16 +299,23 @@ const router = createBrowserRouter([
   }
 ])
 
+// Create a client for TanStack Query
+const queryClient = new QueryClient();
+
 /** -----------------------------
  * Render App.
  * ----------------------------- */
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
-      <ThemeProvider>
-        <PlausibleAnalytics /> {/* Add Plausible Analytics */}
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ToastProvider>
+            <PlausibleAnalytics /> {/* Add Plausible Analytics */}
+            <RouterProvider router={router} />
+          </ToastProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </HelmetProvider>
   </React.StrictMode>
 )

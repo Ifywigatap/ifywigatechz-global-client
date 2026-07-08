@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../services/cart';
-import { paymentService } from '../services/payments';
-import Toast from '../components/Toast';
+import { useToast } from './ToastContext';
+import PaystackButton from '../components/PaystackButton'; // Import PaystackButton
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, cartTotal: total, cartLoading } = useCart();
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -42,65 +42,18 @@ export default function Checkout() {
     }));
   };
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  const handlePaymentSuccess = (response) => {
+    console.log('[Checkout] Payment successful:', response);
+    // Here you would typically call your backend to verify the transaction reference
+    // and create the order in your database.
+    // For now, we'll just navigate to a success page.
+    navigate('/payment-success', { state: { reference: response.reference } });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleFormSubmit = (e) => {
     if (!agreeTerms) {
-      showToast('Please agree to terms and conditions', 'error');
-      return;
-    }
-
-    if (!formData.firstName || !formData.email || !formData.address) {
-      showToast('Please fill in all required fields', 'error');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      console.log('[Checkout] Processing payment with method:', paymentMethod);
-
-      // Initialize payment with Paystack
-      const paymentResponse = await paymentService.initializePayment({
-        email: formData.email,
-        amount: Math.round(total * 100), // Convert to kobo (cents)
-        metadata: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          country: formData.country,
-          items: cart.map(item => ({
-            itemId: item.id,
-            qty: item.qty,
-            price: item.price
-          }))
-        }
-      });
-
-      if (!paymentResponse.ok) {
-        throw new Error(paymentResponse.message || 'Payment initialization failed');
-      }
-
-      // Redirect to Paystack payment page
-      if (paymentResponse.data?.authorizationUrl) {
-        console.log('[Checkout] Redirecting to payment authorization');
-        window.location.href = paymentResponse.data.authorizationUrl;
-      } else {
-        throw new Error('No payment authorization URL received');
-      }
-    } catch (error) {
-      console.error('[Checkout] Error:', error);
-      showToast(error.message || 'Checkout failed. Please try again.', 'error');
-      setLoading(false);
+      addToast('You must agree to the terms and conditions.', 'error');
+      e.preventDefault(); // Prevent the button's default action if it's inside a form
     }
   };
 
@@ -127,7 +80,7 @@ export default function Checkout() {
             <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md p-8 border border-slate-200 dark:border-slate-800 transition-colors duration-300">
               <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-              <form onSubmit={handleSubmit}>
+              <div className="space-y-8">
                 {/* Shipping Information */}
                 <section className="mb-8">
                   <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>
@@ -250,14 +203,35 @@ export default function Checkout() {
                   </label>
                 </section>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition"
-                >
-                  {loading ? 'Processing...' : 'Proceed to Payment'}
-                </button>
-              </form>
+                <PaystackButton
+                  email={formData.email}
+                  amount={total}
+                  reference={`IFY-ECOM-${Date.now()}`}
+                  metadata={{
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.zipCode,
+                    country: formData.country,
+                    cart_items: JSON.stringify(cart.map(item => ({ id: item.id, name: item.name, qty: item.qty })))
+                  }}
+                  onSuccess={handlePaymentSuccess}
+                  onClose={() => addToast('Payment window closed.', 'info')}
+                  onError={(errorMsg) => addToast(errorMsg, 'error')}
+                  onClick={handleFormSubmit}
+                  disabled={loading || !agreeTerms || !formData.email || !formData.firstName}
+                  className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition ${
+                    (!agreeTerms || !formData.email || !formData.firstName)
+                      ? 'disabled:bg-gray-400 disabled:cursor-not-allowed'
+                      : ''
+                  }`}
+                  label={loading ? 'Processing...' : 'Proceed to Payment'}
+                />
+
+              </div>
             </div>
           </div>
 
@@ -304,8 +278,6 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-
-      {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   );
 }

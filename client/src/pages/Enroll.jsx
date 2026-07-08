@@ -3,9 +3,10 @@ import PaystackButton from '../components/PaystackButton'
 import { motion } from 'framer-motion'
 import GlassCard from '../components/GlassCard'
 import Button from '../components/Button'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { PRICING_CONFIG } from '../data/pricingConfig'
+import { Loader2 } from 'lucide-react'
 
 const offerings = [
   { name: 'Frontend Development Course', price: PRICING_CONFIG.academy.frontend.current, originalPrice: PRICING_CONFIG.academy.frontend.original },
@@ -111,17 +112,19 @@ const courseDetails = {
 
 export default function Enroll() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, verifyAndRefreshUser } = useAuth()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [selected, setSelected] = useState(null)
-  const [amount, setAmount] = useState(0)
+  const [amount, setAmount] = useState(0) // This should be in Naira
   const [coupon, setCoupon] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSelect = (item) => {
     setSelected(item)
-    setAmount(item.price * 100) // Paystack uses kobo
+    setAmount(item.price) // PaystackButton handles conversion to kobo
   }
 
   const applyDiscount = () => {
@@ -129,6 +132,20 @@ export default function Enroll() {
       setAmount((prev) => prev * 0.9)
     }
   }
+
+  const handlePaymentSuccess = async (response) => {
+    setIsVerifying(true);
+    setError('');
+    try {
+      await verifyAndRefreshUser(response.reference);
+      alert("Payment successful! Our team will contact you shortly.");
+      navigate(user ? '/dashboard' : '/');
+    } catch (err) {
+      setError("Payment successful, but verification failed. Please contact support.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   return (
     <section className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-4 py-12 flex items-center justify-center transition-colors duration-300">
@@ -286,25 +303,35 @@ export default function Enroll() {
 
                 <div className="flex justify-between text-lg font-bold text-slate-900 dark:text-white transition-colors duration-300">
                   <span>Total</span>
-                  <span>₦{(amount / 100).toLocaleString()}</span>
+                  <span>₦{amount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
             {/* PAYSTACK */}
             <div className="mt-6">
-              <PaystackButton
-                email={email}
-                amount={amount}
-                metadata={{ name, phone, course: selected?.name }}
-                label="Purchase Now"
-                onSuccess={(res) => {
-                  alert("Payment successful! Our team will contact you shortly.");
-                  navigate(user ? '/dashboard' : '/');
-                }}
-                className="w-full rounded-xl bg-brandGold px-6 py-4 text-base font-bold text-black shadow-lg shadow-brandGold/20 transition hover:bg-yellow-500 hover:-translate-y-0.5"
-              />
+              {isVerifying ? (
+                <button
+                  disabled
+                  className="w-full rounded-xl bg-yellow-500 px-6 py-4 text-base font-bold text-black shadow-lg transition flex items-center justify-center gap-2"
+                >
+                  <Loader2 className="animate-spin" size={20} />
+                  Verifying Payment...
+                </button>
+              ) : (
+                <PaystackButton
+                  email={email || user?.email}
+                  amount={amount}
+                  metadata={{ name: name || user?.firstName, phone, course: selected?.name }}
+                  label="Purchase Now"
+                  onSuccess={handlePaymentSuccess}
+                  onClose={() => setError("Payment window closed.")}
+                  onError={(errorMsg) => setError(errorMsg)}
+                  className="w-full rounded-xl bg-brandGold px-6 py-4 text-base font-bold text-black shadow-lg shadow-brandGold/20 transition hover:bg-yellow-500 hover:-translate-y-0.5"
+                />
+              )}
 
+              {error && <p className="text-center text-red-400 mt-3 text-sm">{error}</p>}
               <p className="text-xs text-slate-500 dark:text-neutral-400 mt-3 text-center transition-colors duration-300">
                 Secure payments powered by Paystack.
               </p>
