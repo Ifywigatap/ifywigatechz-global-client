@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
 import { 
   Zap, Target, Heart, Users, BarChart2, TrendingUp, Globe, Star, 
   Lightbulb, Workflow, ShieldCheck, Trophy, Award, Home, Clock, 
@@ -98,10 +99,24 @@ const hiringProcess = [
 ];
 
 export default function TeamPage() {
-  // Logic moved inside to keep variable dependencies clear, 
-  // but data is safely outside the function scope.
-  const leadershipMembers = teamMembers.slice(0, 2); 
-  const coreTeamMembers = teamMembers.slice(2);
+  const [activeDepartment, setActiveDepartment] = useState('All');
+
+  // Get unique departments from team members data
+  const departments = useMemo(() => {
+    const uniqueDepartments = new Set(teamMembers.map(member => member.department).filter(Boolean));
+    return ['All', ...Array.from(uniqueDepartments)];
+  }, []);
+
+  // Filter members based on active department
+  const filteredMembers = useMemo(() => {
+    if (activeDepartment === 'All') {
+      return teamMembers;
+    }
+    return teamMembers.filter(member => member.department === activeDepartment);
+  }, [activeDepartment]);
+
+  const leadershipMembers = filteredMembers.filter(m => m.department === 'Leadership');
+  const coreTeamMembers = filteredMembers.filter(m => m.department !== 'Leadership');
 
   // Shared animation variant for a premium scroll experience
   const fadeInUp = {
@@ -152,6 +167,25 @@ export default function TeamPage() {
       <motion.div {...fadeInUp}>
         <TeamValues values={values} />
       </motion.div>
+
+      {/* Department Filter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="flex flex-wrap justify-center gap-3">
+          {departments.map((dept) => (
+            <motion.button
+              key={dept}
+              onClick={() => setActiveDepartment(dept)}
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 shadow-sm ${
+                activeDepartment === dept
+                  ? "bg-brandBlue text-white scale-105 shadow-brandBlue/20"
+                  : "bg-white/60 dark:bg-neutral-800/60 text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-neutral-700 backdrop-blur-sm"
+              }`}
+            >
+              {dept}
+            </motion.button>
+          ))}
+        </div>
+      </div>
 
       {/* Product Culture */}
       <motion.div {...fadeInUp}>

@@ -1,25 +1,22 @@
 /**
  * Payment Service
- * Handles payment processing with Paystack
+ * Handles all payment-related API calls to the backend.
  */
-
 import { apiService } from './api';
 
 export const paymentService = {
   /**
-   * Initialize Paystack payment
-   * @param {object} paymentData - { amount, email, orderData }
-   * @returns {Promise}
+   * Initialize a payment transaction with the backend.
+   * @param {object} paymentData - Contains amount, email, and metadata.
+   * @returns {Promise<any>} The response from the server, including the Paystack authorization URL.
    */
   async initializePayment(paymentData) {
     try {
-      console.log('[paymentService] Initializing payment:', { amount: paymentData.amount });
+      console.log('[paymentService] Initializing payment with data:', paymentData);
       const response = await apiService.post('/payments/initialize', paymentData);
-      
       if (!response.ok) {
-        throw new Error(response.message || 'Failed to initialize payment');
+        throw new Error(response.message || 'Failed to initialize payment.');
       }
-      
       return response;
     } catch (error) {
       console.error('[paymentService] initializePayment error:', error);
@@ -28,67 +25,17 @@ export const paymentService = {
   },
 
   /**
-   * Verify payment from Paystack
-   * @param {string} reference - Payment reference from Paystack
-   * @returns {Promise}
+   * Verify a payment transaction with the backend after Paystack redirect.
+   * @param {string} reference - The payment reference from Paystack.
+   * @returns {Promise<any>} The verification result from the server.
    */
   async verifyPayment(reference) {
     try {
-      console.log('[paymentService] Verifying payment:', reference);
-      const response = await apiService.post('/payments/verify', { reference });
-      
-      if (!response.ok) {
-        throw new Error(response.message || 'Payment verification failed');
-      }
-      
-      console.log('[paymentService] Payment verified successfully');
-      return response;
+      console.log('[paymentService] Verifying payment with reference:', reference);
+      return await apiService.post('/payments/verify', { reference });
     } catch (error) {
       console.error('[paymentService] verifyPayment error:', error);
       throw error;
     }
   },
-
-  /**
-   * Get payment history
-   * @param {number} page - Page number
-   * @param {number} limit - Items per page
-   * @returns {Promise}
-   */
-  async getPaymentHistory(page = 1, limit = 10) {
-    try {
-      console.log('[paymentService] Fetching payment history');
-      const response = await apiService.get(`/payments?page=${page}&limit=${limit}`);
-      
-      if (!response.ok) {
-        throw new Error(response.message || 'Failed to fetch payment history');
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('[paymentService] getPaymentHistory error:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Get single payment details
-   * @param {string} paymentId - Payment ID
-   * @returns {Promise}
-   */
-  async getPaymentDetails(paymentId) {
-    try {
-      console.log('[paymentService] Fetching payment details:', paymentId);
-      const response = await apiService.get(`/payments/${paymentId}`);
-      
-      if (!response.ok) {
-        throw new Error(response.message || 'Failed to fetch payment details');
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('[paymentService] getPaymentDetails error:', error);
-      throw error;
-    }
-  }
 };

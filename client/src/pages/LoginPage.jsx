@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
@@ -65,6 +65,10 @@ export function LoginPage({ onSwitch }) {
         <Input icon={<Mail size={18} />} placeholder="Email" value={email} onChange={setEmail} />
         <PasswordInput value={password} setValue={setPassword} show={showPassword} setShow={setShowPassword} />
 
+        <div className="flex justify-end text-sm text-slate-500 dark:text-gray-400 -mt-2">
+          <button type="button" onClick={() => onSwitch("forgot")} className="hover:underline">Forgot password?</button>
+        </div>
+
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
@@ -78,10 +82,6 @@ export function LoginPage({ onSwitch }) {
         <GoogleIcon /> Google
       </button>
 
-      <div className="flex justify-between text-sm text-slate-500 dark:text-gray-400 mt-2">
-        <button onClick={() => onSwitch("forgot")} className="hover:underline">Forgot password?</button>
-      </div>
-
       <p className="text-center text-slate-500 dark:text-gray-400 text-sm mt-6">
         Don’t have an account?{' '}
         <span onClick={() => onSwitch("signup")} className="text-blue-500 dark:text-blue-400 cursor-pointer hover:underline">
@@ -92,6 +92,41 @@ export function LoginPage({ onSwitch }) {
   );
 }
 
+const PasswordStrengthMeter = ({ password }) => {
+  const strength = useMemo(() => {
+    let score = 0;
+    if (!password) return 0;
+    if (password.length >= 8) score++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password)) score++;
+    return score;
+  }, [password]);
+
+  const strengthLabels = ["Very Weak", "Weak", "Medium", "Strong", "Very Strong"];
+  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
+
+  return (
+    <div className="space-y-2">
+      <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${strengthColors[strength] || 'bg-red-500'} transition-all duration-300`}
+          initial={{ width: 0 }}
+          animate={{ width: `${(strength / 4) * 100}%` }}
+        />
+      </div>
+      <p className={`text-xs font-medium ${
+        strength === 0 ? 'text-red-500' :
+        strength === 1 ? 'text-orange-500' :
+        strength === 2 ? 'text-yellow-500' :
+        strength === 3 ? 'text-blue-500' : 'text-green-500'
+      }`}>
+        Strength: {strengthLabels[strength]}
+      </p>
+    </div>
+  );
+};
+
 // ================= SIGNUP =================
 export function SignupPage({ onSwitch }) {
   const navigate = useNavigate();
@@ -99,6 +134,7 @@ export function SignupPage({ onSwitch }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -107,6 +143,12 @@ export function SignupPage({ onSwitch }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
 
     try {
       await authService.register(name, email, password);
@@ -144,6 +186,8 @@ export function SignupPage({ onSwitch }) {
         <Input icon={<User size={18} />} placeholder="Full Name" value={name} onChange={setName} />
         <Input icon={<Mail size={18} />} placeholder="Email" value={email} onChange={setEmail} />
         <PasswordInput value={password} setValue={setPassword} show={showPassword} setShow={setShowPassword} />
+        {password && <PasswordStrengthMeter password={password} />}
+        <PasswordInput value={confirmPassword} setValue={setConfirmPassword} show={showPassword} setShow={setShowPassword} placeholder="Confirm Password" />
 
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Creating Account..." : "Sign Up"}
@@ -241,7 +285,7 @@ function Input({ icon, placeholder, value, onChange }) {
   );
 }
 
-function PasswordInput({ value, setValue, show, setShow }) {
+function PasswordInput({ value, setValue, show, setShow, placeholder = "Password" }) {
   return (
     <div className="relative">
       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-400" size={18} />

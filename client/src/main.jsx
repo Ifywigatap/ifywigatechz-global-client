@@ -115,6 +115,7 @@ const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'))
 const SuccessStories = lazy(() => import('./pages/SuccessStories.jsx'))
 const CorporateTraining = lazy(() => import('./pages/CorporateTraining.jsx'))
 const EventsWebinars = lazy(() => import('./pages/EventsWebinars.jsx'))
+const WebinarRegister = lazy(() => import('./pages/WebinarRegister.jsx'))
 const HelpCenter = lazy(() => import('./pages/HelpCenter.jsx'))
 import ErrorPage from './pages/ErrorPage.jsx'
 
@@ -235,6 +236,7 @@ const router = createBrowserRouter([
       { path: "/web3", element: <Web3 /> },
       { path: "/corporate-training", element: <CorporateTraining /> },
       { path: "/events", element: <EventsWebinars /> },
+      { path: "/register/:slug", element: <WebinarRegister /> },
     
       // Protected Course Module Routes
       ...protectedCourseRoutes,

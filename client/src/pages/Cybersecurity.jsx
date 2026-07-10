@@ -147,7 +147,7 @@ export default function Cybersecurity() {
       <section className="bg-gradient-to-r from-slate-800 to-slate-900">
         <div className="border border-red-400/10 bg-slate-900/70 p-8">
           <h2 className="mt-2 text-2xl font-semibold text-white mb-4">Training Roadmap</h2>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
             {modules.map((module) => <ModuleCard key={module.id} module={module} theme={cybersecurityTheme} />)}
           </div>
         </div>

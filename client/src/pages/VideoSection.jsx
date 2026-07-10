@@ -15,14 +15,13 @@ const VideoSection = () => (
       <div className="max-w-5xl mx-auto">
         <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-300 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-lg hover:scale-[1.01] transition duration-300">
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-            <iframe
+            <video
               className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              src="https://res.cloudinary.com/dufcon4jl/video/upload/v1783546435/Ifywigatechz_Global_Services_bjqoqp.mp4"
               title="IFYWIGATECHZ Intro"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+              controls
+              preload="metadata"
+            />
           </div>
         </div>
       </div>

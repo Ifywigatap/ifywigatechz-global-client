@@ -188,7 +188,7 @@ export default function IT() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 p-8 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 p-8 md:grid-cols-3 lg:grid-cols-4">
             {modules.length > 0 ? (
               modules.map((module) => (
                 <ModuleCard key={module.id || module.title} module={module} theme={itTheme} />

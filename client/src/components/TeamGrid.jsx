@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { teamMembers } from "../data/aboutData.js";
 import { motion } from "framer-motion";
+import { MessageSquare, Twitter, Github, Linkedin } from "lucide-react";
 
 export default function Team({ members = teamMembers, title = "Meet Our Team", subtitle = "Passionate professionals dedicated to delivering exceptional digital experiences" }) {
   const navigate = useNavigate();

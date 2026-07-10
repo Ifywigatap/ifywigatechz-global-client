@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   X, MessageCircle, Home, Tag, LayoutDashboard, Briefcase, GraduationCap, Building2, Library, Scale, Link as LinkIcon,
-  User, Shield, Heart, History, ShoppingCart, CreditCard, CheckCircle, Search, Settings,
+  User, Shield, Heart, History, ShoppingCart, CreditCard, CheckCircle, Search, Settings, Download,
   Folder, FileText, ShoppingBag, Code, PenTool, Rocket, Smartphone, Factory, FileSignature,
   BookOpen, UserPlus, Brain, ShieldCheck, Monitor, Palette, Users, BadgeCheck, Stethoscope, Calendar,
   Info, Image, Award, MessageSquare, PhoneCall, Gift, HelpCircle, LifeBuoy, Share2, RefreshCcw, CheckSquare
@@ -137,6 +137,7 @@ function MobileMenu({ open, setOpen }) {
                     onLinkClick={() => setOpen(false)}
                     items={[
                       { name: "User Dashboard", path: "/dashboard", icon: <User size={16} /> },
+                      { name: "My Downloads", path: "/account/downloads", icon: <Download size={16} /> },
                       { name: "Admin Dashboard", path: "/admin-dashboard", icon: <Shield size={16} /> },
                       { name: "Wishlist", path: "/wishlist", icon: <Heart size={16} /> },
                       { name: "Order History", path: "/order-history", icon: <History size={16} /> },

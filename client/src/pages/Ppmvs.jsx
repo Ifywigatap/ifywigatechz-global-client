@@ -167,7 +167,7 @@ export default function Ppmvs() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {MODULES.map((module) => (
               <ModuleCard key={module.id} module={module} />
             ))}

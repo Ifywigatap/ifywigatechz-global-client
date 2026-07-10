@@ -145,7 +145,7 @@ export default function MobileApp() {
 
         {/* Stats */}
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

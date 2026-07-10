@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, ShoppingCart } from "lucide-react";
 import { navLinks } from "../data/navlink";
 import NavItem from "./MegaMenu";
 import ThemeToggle from "./ThemeToggle";
 import { SALE_MODE } from "../data/pricingConfig";
+import { useCart } from "../context/CartContext";
 
 const SaleBanner = () => {
   const calculateTimeLeft = useCallback(() => {
@@ -59,6 +60,7 @@ function Navbar({ open, setOpen }) {
   const timeoutRef = useRef();
   const location = useLocation();
   const searchInputRef = useRef(null);
+  const { cartCount } = useCart();
 
   // Close menus on route change
   useEffect(() => {
@@ -248,6 +250,20 @@ function Navbar({ open, setOpen }) {
 
               {/* Theme Toggle */}
               <ThemeToggle />
+
+              {/* Cart Icon */}
+              <NavLink
+                to="/cart"
+                className="relative p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                aria-label={`View cart with ${cartCount} items`}
+              >
+                <ShoppingCart size={18} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold ring-2 ring-white dark:ring-slate-900">
+                    {cartCount}
+                  </span>
+                )}
+              </NavLink>
 
               {/* WhatsApp CTA */}
               <a
