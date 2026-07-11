@@ -9,6 +9,9 @@ import {
   Building2,
   Sparkles,
   ArrowRight,
+  Atom,
+  Database,
+  Server,
 } from "lucide-react";
 
 const services = [
@@ -30,22 +33,22 @@ const services = [
   },
   {
     icon: Building2,
-    title: "Real Estate",
+    title: "Business Solutions",
   },
 ];
 
 const stats = [
   {
-    value: "50+",
-    label: "Projects",
+    value: "10+",
+    label: "Projects Completed",
   },
   {
-    value: "500+",
-    label: "Students",
+    value: "100%",
+    label: "Responsive Design",
   },
   {
-    value: "5+",
-    label: "Services",
+    value: "MERN",
+    label: "Stack Expertise",
   },
   {
     value: "24/7",
@@ -55,63 +58,79 @@ const stats = [
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center transition-colors duration-300">
+    <section className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center">
 
-      {/* Background */}
-      <div className="absolute inset-0">
+    {/* Premium Tech Background */}
+<div className="absolute inset-0 overflow-hidden">
 
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/10 dark:bg-blue-600/30 blur-[160px]" />
+  {/* Aurora */}
+  <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] rounded-full bg-cyan-500/20 blur-[180px]" />
 
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-600/10 dark:bg-purple-600/20 blur-[180px]" />
+  <div className="absolute bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full bg-blue-600/20 blur-[200px]" />
 
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-sky-400/10 blur-[150px]" />
 
-      </div>
+  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
-      <div className="container mx-auto px-6 lg:px-12 relative z-10">
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#020617_100%)]" />
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+</div> {/* <-- THIS CLOSING DIV IS IMPORTANT */}
 
-          {/* LEFT */}
+<div className="container mx-auto px-6 lg:px-12 relative z-10">
+
+
+
+          {/* LEFT CONTENT */}
+
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
+
             {/* Badge */}
 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 mb-8 shadow-sm dark:shadow-none transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 mb-8"
             >
               <Sparkles size={16} />
-              Ifywigatechz Global Services
+              Unlocking Potential Through Technology & Innovation
             </motion.div>
 
-            {/* Heading */}
+            {/* Main Heading */}
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-tight text-slate-900 dark:text-white transition-colors">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-tight text-slate-900 dark:text-white">
 
-              Building
+              IFYWIGATECHZ
 
-              <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Digital Experiences
+              <span className="block bg-gradient-to-r from-blue-500 via-cyan-400 to-green-400 bg-clip-text text-transparent">
+                GLOBAL SERVICES
               </span>
 
-              That Inspire Growth
             </h1>
+
+            {/* Sub Heading */}
+
+            <h2 className="mt-6 text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-200">
+
+              Building Modern Websites,
+              Web Applications & Digital Solutions
+
+            </h2>
 
             {/* Description */}
 
-            <p className="mt-8 text-lg sm:text-xl text-slate-700 dark:text-slate-300 max-w-xl leading-relaxed transition-colors">
-              We build modern web applications, create beautiful user
-              experiences, deliver innovative business solutions, and train the
-              next generation of technology professionals through
-              Ifywigatechz Academy.
+            <p className="mt-8 text-lg text-slate-700 dark:text-slate-300 max-w-xl leading-relaxed">
+
+              Helping businesses establish a powerful online presence through
+              custom websites, web applications, UI/UX design, digital
+              solutions, and technology-driven innovation tailored for growth.
+
             </p>
 
-            {/* Buttons */}
+            {/* CTA Buttons */}
 
             <div className="flex flex-wrap gap-4 mt-10">
 
@@ -119,7 +138,8 @@ export default function HeroSection() {
                 to="/contact"
                 className="group px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2 transition"
               >
-                Start Your Project
+                Get A Free Consultation
+
                 <ArrowRight
                   size={18}
                   className="group-hover:translate-x-1 transition"
@@ -127,27 +147,48 @@ export default function HeroSection() {
               </Link>
 
               <Link
-                to="/services"
-                className="px-8 py-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-lg text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition shadow-sm dark:shadow-none"
+                to="/projects"
+                className="px-8 py-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-lg text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition"
               >
-                Explore Services
+                View Projects
               </Link>
 
             </div>
 
-            {/* Trust Badges */}
+            {/* Tech Stack */}
 
-            <div className="flex flex-wrap gap-3 mt-10">
+            <div className="flex flex-wrap gap-4 mt-10">
+
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                <Atom size={16} />
+                React
+              </span>
+
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                <Server size={16} />
+                Node.js
+              </span>
+
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                <Database size={16} />
+                MongoDB
+              </span>
+
+            </div>
+
+            {/* Service Tags */}
+
+            <div className="flex flex-wrap gap-3 mt-8">
 
               {[
-                "MERN Development",
+                "Web Development",
                 "UI/UX Design",
-                "AI Solutions",
-                "Tech Training",
+                "MERN Development",
+                "Tech Academy",
               ].map((item) => (
                 <span
                   key={item}
-                  className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-300 shadow-sm dark:shadow-none transition-colors"
+                  className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm"
                 >
                   ✓ {item}
                 </span>
@@ -162,13 +203,13 @@ export default function HeroSection() {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-lg rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors"
+                  className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-lg rounded-2xl p-5"
                 >
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white transition-colors">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
                     {stat.value}
                   </h3>
 
-                  <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm transition-colors">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
                     {stat.label}
                   </p>
                 </div>
@@ -178,15 +219,11 @@ export default function HeroSection() {
 
           </motion.div>
 
-          {/* RIGHT */}
+          {/* RIGHT SIDE */}
 
           <div className="relative flex justify-center mt-12 lg:mt-0">
 
-            {/* Glow */}
-
             <div className="absolute w-[450px] h-[450px] bg-blue-500/20 blur-[120px] rounded-full" />
-
-            {/* Main Card */}
 
             <motion.div
               animate={{
@@ -196,16 +233,16 @@ export default function HeroSection() {
                 duration: 6,
                 repeat: Infinity,
               }}
-              className="relative w-full max-w-lg rounded-[32px] border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-xl p-8 shadow-2xl transition-colors"
+              className="relative w-full max-w-lg rounded-[32px] border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-xl p-8 shadow-2xl"
             >
               <img
-                src="/heroimage.png"
-                alt="IfyWigaTechz"
+                src="/favlogo.png"
+                alt="Ifywigatechz Global Services"
                 className="w-full object-contain"
               />
             </motion.div>
 
-            {/* Floating Cards */}
+            {/* Floating Service Cards */}
 
             {services.map((service, index) => {
               const Icon = service.icon;
@@ -220,18 +257,7 @@ export default function HeroSection() {
                     duration: 4 + index,
                     repeat: Infinity,
                   }}
-                  className={`hidden sm:flex
-                    absolute
-                    bg-white/80 dark:bg-white/10
-                    backdrop-blur-xl
-                    border border-slate-200 dark:border-white/10
-                    rounded-2xl
-                    px-4 py-3
-                    items-center gap-3
-                    text-slate-800 dark:text-white
-                    shadow-xl
-                    transition-colors
-                  `}
+                  className="hidden sm:flex absolute bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 items-center gap-3 text-slate-800 dark:text-white shadow-xl"
                   style={{
                     top: `${15 + index * 15}%`,
                     left: index % 2 === 0 ? "-40px" : "80%",
@@ -248,7 +274,8 @@ export default function HeroSection() {
 
         </div>
 
-      </div>
+      
+
     </section>
   );
 }
