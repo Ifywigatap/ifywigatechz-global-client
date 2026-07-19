@@ -187,7 +187,7 @@ export default function Pricing() {
               If your project needs more than a template, our team can craft a high-performance solution tailored to your business goals.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <NavLink to="/request-quote" className="inline-flex items-center justify-center rounded-3xl bg-brandBlue dark:bg-brandGold px-8 py-3 text-sm font-semibold text-white dark:text-black transition hover:bg-blue-700 dark:hover:bg-yellow-500">
+              <NavLink to="/requestquote" className="inline-flex items-center justify-center rounded-3xl bg-brandBlue dark:bg-brandGold px-8 py-3 text-sm font-semibold text-white dark:text-black transition hover:bg-blue-700 dark:hover:bg-yellow-500">
                 Request Custom Quote
               </NavLink>
               <NavLink to="/contact" className="inline-flex items-center justify-center rounded-3xl border border-brandBlue bg-transparent px-8 py-3 text-sm font-semibold text-brandBlue dark:text-white transition hover:border-blue-400 hover:bg-brandBlue/5 dark:hover:bg-white/5">

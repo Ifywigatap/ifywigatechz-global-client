@@ -190,7 +190,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Location</h3>
-                    <p className="text-slate-600 dark:text-neutral-300">N0 2 Ohioigbo by Waterside Road Ayama Ndoki Oyigbo LGA, Rivers State Nigeria.</p>
+                    <p className="text-slate-600 dark:text-neutral-300">N0 2 Ohigbo by Waterside Road Ayama Ndoki Oyigbo LGA, Rivers State Nigeria.</p>
                   </div>
                 </div>
               </div>
@@ -198,9 +198,10 @@ export default function Contact() {
               <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-xl font-bold mb-4">Business Hours</h3>
                 <div className="space-y-2 text-slate-600 dark:text-neutral-400">
-                  <p><strong>Monday - Friday:</strong> 9:00 AM - 5:00 PM</p>
-                  <p><strong>Saturday:</strong> 10:00 AM - 2:00 PM</p>
-                  <p><strong>Sunday:</strong> Closed</p>
+                  <p><strong>Monday - Thursday:</strong> 7:00 AM - 6:00 PM</p>
+                  <p><strong>Friday:</strong> 7:00 AM - 4:00 PM</p>
+                  <p><strong>Sunday:</strong> 10:00 AM - 2:00 PM</p>
+                  <p><strong>Saturday:</strong> Closed</p>
                 </div>
               </motion.div>
 
@@ -209,7 +210,7 @@ export default function Contact() {
                 <p className="text-slate-600 dark:text-neutral-400 mb-5 text-sm">
                   For detailed project pricing and consultation, please use our quote request form.
                 </p>
-                <Link to="/request-quote" className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-brandBlue hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors duration-200 shadow-md shadow-blue-200 dark:shadow-none">
+                <Link to="/requestquote" className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-brandBlue hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors duration-200 shadow-md shadow-blue-200 dark:shadow-none">
                   <Calculator size={18} className="mr-2" />
                   Request a Quote
                 </Link>
@@ -228,7 +229,7 @@ export default function Contact() {
             <div className="text-center mb-12">
               <p className="font-semibold text-brandBlue mb-2">Our Location</p>
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Find Us On The Map</h2>
-              <p className="text-lg text-slate-600 dark:text-neutral-400 mt-2 max-w-2xl mx-auto">Visit our office for a face-to-face consultation. We are located in the heart of Benin City.</p>
+              <p className="text-lg text-slate-600 dark:text-neutral-400 mt-2 max-w-2xl mx-auto">Visit our office for a face-to-face consultation. We are located in the heart of Ph City.</p>
             </div>
             <div className="mt-8 sm:mt-12 aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl">
               <GoogleMapEmbed

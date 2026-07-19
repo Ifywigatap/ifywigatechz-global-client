@@ -79,7 +79,7 @@ export default function Uiux() {
             className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
           >
             <NavLink
-              to="/startproject"
+              to="/start-project"
               className="px-10 py-4 bg-brandBlue text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl shadow-brandBlue/20 hover:scale-105"
             >
               Start Design Project

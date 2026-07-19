@@ -236,7 +236,7 @@ export default function Hireme() {
             </div>
 
             <div className="flex-responsive items-center sm:items-start">
-              <NavLink to="/startproject" className="btn btn-primary px-12 py-4 text-xl shadow-2xl transition-transform duration-300 hover:-translate-y-1">
+              <NavLink to="/start-project" className="btn btn-primary px-12 py-4 text-xl shadow-2xl transition-transform duration-300 hover:-translate-y-1">
                 Start My Project →
               </NavLink>
               <a href="mailto:ifywigatech9@gmail.com?subject=Project%20Inquiry&body=Hi%20IFYWIGATECHZ%2C%0AI%27m%20interested%20in%20hiring%20you%20for..." className="inline-flex items-center justify-center rounded-3xl border border-brandBlue/30 dark:border-white/20 bg-white/50 dark:bg-white/10 px-12 py-4 text-base font-semibold text-brandBlue dark:text-white transition hover:bg-white/80 dark:hover:bg-white/20">

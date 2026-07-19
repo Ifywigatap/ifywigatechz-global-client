@@ -134,7 +134,7 @@ export default function AboutGrid() {
 
                 {/* CTA */}
                 <div className="flex flex-wrap gap-4 mt-12">
-                    <Link to="/startproject" className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl hover:scale-105 transition shadow-lg font-bold">
+                    <Link to="/start-project" className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl hover:scale-105 transition shadow-lg font-bold">
                         Start Project →
                     </Link>
                     <Link to="/learn" className="px-8 py-3 bg-brandBlue text-white rounded-xl hover:scale-105 transition shadow-lg font-bold">
